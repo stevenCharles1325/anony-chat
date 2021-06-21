@@ -1,0 +1,24 @@
+.message-box {
+  font-size: 18px;
+  height: auto;
+  color: #2d3436;
+  border-radius: 10px;
+  padding: 2px 5% 2px 5%;
+  letter-spacing: normal;
+  text-align: justify;
+  text-justify: auto;
+  box-shadow: 5px 5px 10px 3px rgba(0, 0, 0, 0.3);
+}
+.message-box p {
+  margin: 0px;
+}
+
+.nameShoutBox {
+  width: 50%;
+  height: auto;
+  margin: auto;
+  color: #636e72;
+  text-align: center;
+}
+
+/*# sourceMappingURL=message.css.map */

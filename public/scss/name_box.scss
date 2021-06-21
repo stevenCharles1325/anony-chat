@@ -1,0 +1,108 @@
+@import 'constants';
+@import 'tools';
+
+.name-box{
+    @include move;
+
+    width: 90vw;
+    height: 90vh;
+
+    visibility: visible;
+    transition: .2s ease-in-out;
+
+}
+
+.nameBox-logo{
+    @include move(0%, 50%, -50%, 0%);
+    width: 155px;
+    height: 150px;
+    z-index: 1;
+}
+
+.inp-form{
+    background-color: $primary2;
+    height: 80%;
+    margin-top: 20%;
+    border-radius: 10px;
+    position: relative;
+}
+
+
+.field-cont{
+    @include move;
+    width: 90%;
+    height: 50%;
+    text-align: center;
+}
+
+.checker-box{
+    width: 50%;
+    text-align: center;
+    background-color: #dfe6e9;
+    transition: .3s ease-in-out;
+    margin: auto;
+}
+
+.checker{
+    
+    letter-spacing: 0px;
+    color: $primary2;
+    overflow: hidden;
+}
+
+.username-field{
+    border: none;
+    background-color: transparent;
+    text-align: center;
+    outline: none;
+
+    border-bottom: 1px solid $primary3;
+    color: $primary3;
+}
+
+.enterBtn{
+    color: $primary3;
+}
+
+@media (min-width: 360px) {
+    .name-box{
+        @include move;
+    
+        width: 90vw;
+        height: 90vh;
+    
+    }
+}
+
+@media (min-width: 620px) {
+    .name-box{
+        @include move;
+    
+        width: 60vw;
+        height: 60vh;
+    
+    }
+
+}
+
+@media (min-width: 768px) {
+    .name-box{
+        @include move;
+    
+        width: 50vw;
+        height: 60vh;
+    
+    }
+       
+}
+
+@media (min-width: 1024px){
+    .name-box{
+        @include move;
+    
+        width: 30vw;
+        height: 60vh;
+    
+    }
+       
+}

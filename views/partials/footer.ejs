@@ -1,0 +1,17 @@
+    <script src="/public/js/index.js"></script>
+
+    <script src="/socket/client-dist/socket.io.js"></script>
+    <script src="/public/js/check_name.js"></script>
+    <script src="/public/js/anony.js"></script>
+    <script>
+        var socket
+        $(function(){
+            socket = io()
+            validateName()
+            allowEntry( ready )
+            $('.enterBtn').on('click', handleEntry)
+        })
+    </script>
+    
+    </body>
+</html>

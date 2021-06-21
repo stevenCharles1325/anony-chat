@@ -1,0 +1,17 @@
+  
+{
+    "name" : "anony-chat",
+    "short_name" : "anony-chat",
+    "start_url" : "/",
+    "background_color" : "#2d3436",
+    "theme_color" : "#636e72",
+    "icons" : [
+        {
+            "src" : "/public/images/logo/anony.png",
+            "sizes" : "512x512",
+            "type" : "image/png"
+        }
+    ],
+    "display" : "standalone"
+
+}

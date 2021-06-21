@@ -1,0 +1,14 @@
+@import 'tools';
+
+.headcount-box{
+    @include move(50%, 50%, -50%, -50%);
+
+    letter-spacing: normal;
+    opacity: 0.5;
+    transition: .5s ease-in;
+    color: whitesmoke;
+
+    p{
+        margin: 0px;
+    }
+}
