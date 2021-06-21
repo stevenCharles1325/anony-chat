@@ -18,22 +18,22 @@ app.use('/', express.static(__dirname) )
 app.set('views', path.join(__dirname, '/views'))
 app.set('view engine', 'ejs')
 
+app.get('/', (req, res) => {
+    let container =  JSON.parse(fs.readFileSync( path.join(__dirname, '/data/user_list.json'))).names.join(' ')
+    res.render( path.join(__dirname, '/views/index'), {title: 'Anony-chat', name_list: container })
+})
+
+app.post('/save-user', (req, res) => {
+    const username = req.body.name
+
+    const container =  JSON.parse(fs.readFileSync( path.join(__dirname, '/data/user_list.json')))
+    container.names.push(username)
+
+    fs.writeFileSync( path.join(__dirname, '/data/user_list.json'), JSON.stringify(container))            
+} )
+
 io.on('connection', (socket) => {
     console.log('New connection')
-
-    app.get('/', (req, res) => {
-        let container =  JSON.parse(fs.readFileSync( path.join(__dirname, '/data/user_list.json'))).names.join(' ')
-        res.render( path.join(__dirname, '/views/index'), {title: 'Anony-chat', name_list: container })
-    })
-    
-    app.post('/save-user', (req, res) => {
-        const username = req.body.name
-    
-        const container =  JSON.parse(fs.readFileSync( path.join(__dirname, '/data/user_list.json')))
-        container.names.push(username)
-    
-        fs.writeFileSync( path.join(__dirname, '/data/user_list.json'), JSON.stringify(container))            
-    } )
 
     socket.on('user joined', (userData) => {
         const list_of_names =  JSON.parse(fs.readFileSync( path.join(__dirname, '/data/user_list.json')))
