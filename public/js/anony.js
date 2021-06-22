@@ -1,13 +1,15 @@
 // const url = document.location.href
 const UCOLOR = '#f8c291'
+
 let userData 
 let WIDTH = 0
 let dataRetrieved = false
+let isNotTyping = false
 
 var audio
 
 $(window).on("beforeunload", function() { 
-    socket.emit('disconn', {data: userData, request: 'disconnect'})
+    socket.emit('disconnection', {data: userData, request: 'disconnect'})
 })
 
 function init(){
@@ -19,19 +21,60 @@ function init(){
         message:  $('.message').val()
     }
 
-    socket.on('headcount', updateHeadCount)
-
-    socket.on('disconn', shoutEvent)
+    socket.emit('user joined', {data: userData, request: 'connect'})
+    socket.on('user joined', shoutEvent)
 
     socket.emit('retrieve')
     socket.on('retrieve', displayContent)
 
-    $('.sendBtn').on('click', messageHandler)
+    socket.on('headcount', updateHeadCount)
 
-    socket.emit('user joined', {data: userData, request: 'connect'})
-    socket.on('user joined', shoutEvent)
+    socket.on('typing', setToTyping)
+    socket.on('not typing', setToNotTyping)
 
     socket.on('message', displayMessage)
+
+    socket.on('disconnection', shoutEvent)
+
+    $('.sendBtn').on('click', messageHandler)
+    
+    $('.message').focusin(userRequestTyping)
+    $('.message').focusout(() => {
+        socket.emit('not typing', userData)
+    })
+    
+    updateScroll()
+}
+
+function updateScroll(){
+    let chatHeight = document.querySelector('.chat-box').scrollHeight
+    $('.chat-box').animate({ scrollTop: chatHeight }, 100);
+}
+
+function userRequestTyping(){
+    $('.message').on('keydown', keyListen)
+}
+
+function keyListen(e){
+    if(!isNotTyping){
+        socket.emit('typing', userData)
+        isNotTyping = true        
+    }
+}
+
+function setToTyping(data){
+    data.message = 'Typing...'
+    const options = {
+        data        :   data,
+        color       :   UCOLOR,
+        width       :   WIDTH,
+        isReverse   :   false
+    }
+    display(options)
+}
+
+function setToNotTyping(data){
+    $(`#${data.username}`).remove()
 }
 
 function updateHeadCount( total ){
@@ -58,6 +101,7 @@ function shoutEvent( user ){
     container.appendChild(nameShelf)
 
     $('.chat-box').append(container)
+    updateScroll()
 }
 
 function messageHandler(){
@@ -66,8 +110,18 @@ function messageHandler(){
     widthUpdate(userData)
     
     if(userData.message){
+        socket.emit('not typing', userData)
+        isNotTyping = false
+    
         audio.sendAud()
-        display(userData, UCOLOR, WIDTH, true)
+        const options = {
+            data        :   userData,
+            color       :   UCOLOR,
+            width       :   WIDTH,
+            isReverse   :   true 
+        }
+
+        display(options)
         socket.emit('message', userData)
         $('.message').val('')
     }
@@ -76,7 +130,14 @@ function messageHandler(){
 function displayMessage(data){
     audio.newMsgAud()    
     widthUpdate(data)
-    display(data, null, WIDTH)
+    const options = {
+        data        :   data,
+        color       :   null,
+        width       :   WIDTH,
+        isReverse   :   false
+    }
+
+    display(options)
 }
 
 function displayContent(data){
@@ -84,7 +145,13 @@ function displayContent(data){
         
         for(let log of data){
             widthUpdate(log)
-            display(log, null, WIDTH)
+            const options = {
+                data        :   log,
+                color       :   null,
+                width       :   WIDTH,
+                isReverse   :   false 
+            }
+            display(options)
         }
 
         dataRetrieved = true
@@ -92,26 +159,27 @@ function displayContent(data){
 }
 
 
+function display(opt){
+    let message = new Message(opt.data)
 
-function display(data, color, width, isReverse = false){
-    let message = new Message(data)
-
-    if(color && isReverse){
-        message.setColor( color )
+    if(opt.color && opt.isReverse){
+        message.setColor( opt.color )
         message.setLeft()
     } 
-    message.setWidth(width)
+
+    message.setWidth(opt.width)
     message.show()
+    updateScroll()
 }
 
 function widthUpdate( data ){
     WIDTH = data.message.length >= 15 ? '50%' : 'fit-content'
 }
 
-
 class Message{
     constructor(data){
         this.message = data.message
+        this.screenname = data.username
         this.name = data.username === userData.username ? 'You' : data.username
 
         this.cover = document.createElement('div')
@@ -134,6 +202,7 @@ class Message{
     }
 
     show(){
+        if(this.message === 'Typing...') this.cover.id = this.screenname
 
         this.messageBox.style.backgroundColor = this.color
         this.messageStyle.innerHTML = this.message
@@ -161,9 +230,11 @@ class Message{
         this.cover.appendChild( this.container )
 
         this.messageBox.classList.add('message-box')
-
+        
         $('.chat-box').append(this.cover)
+
     }
+
 
     setColor( color ){
         this.color = color
@@ -185,6 +256,7 @@ class Message{
         this.messageBox.style.width = width
     }
 }
+
 
 class AnonMp3{
     constructor(){
@@ -215,6 +287,7 @@ class AnonMp3{
 const checkState = setInterval(() => {
     if( status == 200) {
         init()
+        console.log('here')
         clearInterval(checkState)
     }
 }, 1000)

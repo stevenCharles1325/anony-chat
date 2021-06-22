@@ -75,17 +75,7 @@ function handleEntry(){
 }
 
 function saveName(){
-    const data = { name : username }
-    const option = {
-        method: 'POST',
-        headers: {
-            "Content-Type": "application/json" 
-        },
-        body: JSON.stringify(data)
-    }
-    socket.emit('deliver username', username)
-    fetch('/save-user', option).then( res => res.status ).catch( err => console.error(err ))
-
+    socket.emit('savename', username)
     status = 200
 }
 

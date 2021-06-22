@@ -5,6 +5,9 @@
     <script src="/public/js/anony.js"></script>
     <script>
         var socket
+        var username
+        var status = 0
+        
         $(function(){
             socket = io()
             validateName()

@@ -23,61 +23,68 @@ app.get('/', (req, res) => {
     res.render( path.join(__dirname, '/views/index'), {title: 'Anony-chat', name_list: container })
 })
 
-app.post('/save-user', (req, res) => {
-    const username = req.body.name
+const requestUpdatedData = () => {
+    const compiledData = JSON.parse(fs.readFileSync( path.join(__dirname, '/data/log.json')))
+    const list_of_names =  JSON.parse(fs.readFileSync( path.join(__dirname, '/data/user_list.json')))
 
-    const container =  JSON.parse(fs.readFileSync( path.join(__dirname, '/data/user_list.json')))
-    container.names.push(username)
-
-    fs.writeFileSync( path.join(__dirname, '/data/user_list.json'), JSON.stringify(container))            
-} )
+    return [compiledData, list_of_names]
+}
 
 io.on('connection', (socket) => {
-    console.log('New connection')
+    
+    socket.on('savename', data => {
+        const container =  JSON.parse(fs.readFileSync( path.join(__dirname, '/data/user_list.json')))
+        container.names.push(data)
+
+        fs.writeFileSync( path.join(__dirname, '/data/user_list.json'), JSON.stringify(container))    
+    })
 
     socket.on('user joined', (userData) => {
-        const list_of_names =  JSON.parse(fs.readFileSync( path.join(__dirname, '/data/user_list.json')))
-        io.emit('headcount', list_of_names.names.length)
-
+        io.emit('headcount', io.engine.clientsCount)
         io.emit('user joined', userData)
     })
 
     socket.on('retrieve', () => {
-        const compiledData = JSON.parse(fs.readFileSync( path.join(__dirname, '/data/log.json')))
+        let [compiledData, list_of_names] = requestUpdatedData()
         io.emit('retrieve', compiledData.log)
     })
 
+    socket.on('typing', (data) => {
+        socket.broadcast.emit('typing', data)
+    })
+
+    socket.on('not typing', (data) => {
+        io.emit('not typing', data)
+    })
 
     socket.on('message', (data) => {
         logCurrentUser(data)
         socket.broadcast.emit('message', data)
     })
 
-    socket.on('disconn', (user) => {
-        const list_of_names =  JSON.parse(fs.readFileSync( path.join(__dirname, '/data/user_list.json')))
-        const compiledData = JSON.parse(fs.readFileSync( path.join(__dirname, '/data/log.json')))
-
+    socket.on('disconnection', (user) => {
+        let [compiledData, list_of_names] = requestUpdatedData()
         if(user.data){
             const newList = []
-            console.log(user)
             for(let item of list_of_names.names){
                 if( item === user.data.username ) continue
                 newList.push(item)
             }
     
-            list_of_names.names = newList
-    
-    
-            io.emit('headcount', newList.length)
-            socket.broadcast.emit('disconn', user)
+            list_of_names.names = newList    
+            io.engine.clientsCount -= 1
+            io.emit('headcount', io.engine.clientsCount)
+            socket.broadcast.emit('disconnection', user)
+
         }
 
-        if(user.data && list_of_names.names.length == 0){
+        if(io.engine.clientsCount == 0){
             compiledData.log = []
         }
 
         fs.writeFileSync( path.join(__dirname, '/data/user_list.json'), JSON.stringify(list_of_names))    
         fs.writeFileSync( path.join(__dirname, '/data/log.json'), JSON.stringify(compiledData))    
+
     })
 
 })
